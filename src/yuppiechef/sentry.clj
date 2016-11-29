@@ -3,10 +3,10 @@
     [yuppiechef.sentry.impl :as impl]
     [clojure.string :as str]))
 
-(def fallback (atom {:enabled? false}))
+(defonce fallback (atom {:enabled? false}))
 
 (defn build-url [{port :server-port :keys [scheme server-name uri]}]
-  (str (name scheme) "://" server-name
+  (str (when scheme (name scheme) "://") server-name
        (when (and port (not= 80 port))
          (str ":" port))
        uri))
@@ -34,14 +34,15 @@
         capture? (if (and enabled? ignore?)
                    (comp not ignore?)
                    (constantly enabled?))]
-    (assoc dsn
-      ;; dsn
-      :packet-info (parse-dsn dsn)
-      :capture? capture?
-      ;; extra
-      ;; namespaces
-      ;; user-info
-      :http-info (:http-info config http-info))))
+    (when enabled?
+      (assoc config
+        ;; dsn
+        :packet-info (parse-dsn dsn)
+        :capture? capture?
+        ;; extra
+        ;; namespaces
+        ;; user-info
+        :http-info (:http-info config http-info)))))
 
 (def normalize (memoize -normalize))
 
