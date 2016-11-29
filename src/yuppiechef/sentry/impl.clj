@@ -37,28 +37,28 @@
        "sentry_key=" key ", "
        "sentry_secret=" secret))
 
-(defn send-packet [{:keys [ts uri project-id key secret] :as packet-info}]
+(defn send-event [{:keys [ts uri project-id key secret]} event-info]
   (let [url (make-sentry-url uri project-id)
         header (make-sentry-header ts key secret)]
     (http/post url
       {:insecure? true
        :throw-exceptions false
        :headers {"X-Sentry-Auth" header, "User-Agent" "yuppiechef.sentry/0.1.0"}
-       :body (json/generate-string packet-info)})))
+       :body (json/generate-string event-info)})))
 
 (defn capture [packet-info event-info]
   "Send a message to a Sentry server.
   event-info is a map that should contain a :message key and optional
   keys found at http://sentry.readthedocs.org/en/latest/developer/client/index.html#building-the-json-packet"
-  (send-packet
+  (send-event
+    packet-info
     (merge
-      packet-info
       {:level "error"
        :platform "clojure"
        :server_name (.getHostName (InetAddress/getLocalHost))
-       :ts (str (Timestamp. (.getTime (Date.))))}
-      event-info
-      {:event_id (generate-uuid)})))
+       :ts (str (Timestamp. (.getTime (Date.))))
+       :event_id (generate-uuid)}
+      event-info)))
 
 (defn- add-info [event-map iface info-fn req]
   (if info-fn
