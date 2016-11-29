@@ -61,10 +61,12 @@
       {:event_id (generate-uuid)})))
 
 (defn- add-info [event-map iface info-fn req]
-  (assoc event-map iface (info-fn req)))
+  (if info-fn
+    (assoc event-map iface (info-fn req))
+    event-map))
 
 (defn capture-error [{:keys [packet-info extra namespaces capture? http-info user-info]} req ^Throwable e]
-  (when (capture? e)
+  (when (and capture? (capture? e))
     (future
       (capture packet-info
         (-> (merge extra {:message (.getMessage e)})
