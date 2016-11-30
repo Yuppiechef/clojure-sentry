@@ -8,6 +8,13 @@
     (java.sql Timestamp)
     (java.util Date UUID)))
 
+(def hostname
+  (delay
+    (try
+      (.getHostName (InetAddress/getLocalHost))
+      (catch Exception _
+        "unknown"))))
+
 (defn- make-frame [^StackTraceElement element app-namespaces]
   {:filename (.getFileName element)
    :lineno (.getLineNumber element)
@@ -55,7 +62,7 @@
     (merge
       {:level "error"
        :platform "clojure"
-       :server_name (.getHostName (InetAddress/getLocalHost))
+       :server_name @hostname
        :ts (str (Timestamp. (.getTime (Date.))))
        :event_id (generate-uuid)}
       event-info)))
