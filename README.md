@@ -1,4 +1,4 @@
-# yuppiechef.sentry
+# yuppiechef.sentry (Archived)
 
 Utilities for interactive with sentry.io error tracking from Clojure.
 
